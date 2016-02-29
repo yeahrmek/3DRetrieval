@@ -29,6 +29,10 @@ cifar10FullyConnected: $(OBJCV) SpatiallySparseDatasetCIFAR10FullyConnected.o ci
 cifar100: $(OBJCV) SpatiallySparseDatasetCIFAR100.o cifar100.o
 	$(NVCC) -o cifar100 $(OBJCV) SpatiallySparseDatasetCIFAR100.o cifar100.o $(LIBS) $(NVCCFLAGS)
 
+modelNet: $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetModelNet.o modelNet.o
+	$(NVCC) -o modelNet $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetModelNet.o modelNet.o $(LIBS) $(NVCCFLAGS)
+
+
 shrec2015: $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetSHREC2015.o shrec2015.o
 	$(NVCC) -o shrec2015 $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetSHREC2015.o shrec2015.o $(LIBS) $(NVCCFLAGS)
 
@@ -61,4 +65,3 @@ plankton: $(OBJCV) plankton.o
 
 cifar10indexLearning: $(OBJCV) SpatiallySparseDatasetCIFAR10.o cifar10indexLearning.o
 	$(NVCC) -o cifar10indexLearning $(OBJCV) SpatiallySparseDatasetCIFAR10.o cifar10indexLearning.o $(LIBS) $(NVCCFLAGS)
-
