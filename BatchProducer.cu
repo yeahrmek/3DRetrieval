@@ -6,12 +6,15 @@
 #include "BatchProducer.h"
 #include "SpatiallySparseBatch.h"
 #include "SpatiallySparseBatchInterface.h"
+#include "Off3DFormatPicture.h"
 #include "utilities.h"
 #include <algorithm>
 #include <functional>
 #include <mutex>
 #include <chrono>
 #include <cassert>
+
+#include <unistd.h>
 
 BatchProducer::BatchProducer(SparseConvNetCUDA &cnn,
                              SpatiallySparseDataset &dataset, int spatialSize,
@@ -31,6 +34,7 @@ BatchProducer::BatchProducer(SparseConvNetCUDA &cnn,
       cnn.batchPool[c].interfaces.emplace_back(cnn.sharedSubInterfaces.back());
     }
   }
+
 #ifdef MULTITHREAD_BATCH_PRODUCTION
   for (int nThread = 0; nThread < cnn.nBatchProducerThreads; ++nThread)
     workers.emplace_back(&BatchProducer::batchProducerThread, this, nThread);
@@ -44,9 +48,24 @@ void BatchProducer::preprocessBatch(int c, int cc, RNG &rng) {
   cnn.batchPool[cc].interfaces[0].spatialSize = spatialSize;
   cnn.batchPool[cc].interfaces[0].featuresPresent.hVector() =
       range(dataset.nFeatures);
-  for (int i = c * batchSize;
-       i < min((c + 1) * batchSize, (int)(dataset.pictures.size())); i++) {
-    Picture *pic = dataset.pictures[permutation[i]]->distort(rng, dataset.type);
+  int n_pictures = dataset.pictures.size();
+  std::ofstream logfile("log.txt");
+  for (int i = c * batchSize; i < min((c + 1) * batchSize, n_pictures); i++) {
+    Picture *pic;
+    if (dataset.labels.size() != 0) {
+      logfile << dataset.pictures_path[permutation[i]] << std::endl;
+      logfile << dataset.labels[permutation[i]] << std::endl;
+      usleep(3000000);
+      OffSurfaceModelPicture pic_tmp = OffSurfaceModelPicture(
+          dataset.pictures_path[permutation[i]],
+          dataset.renderSize,
+          dataset.labels[permutation[i]]);
+      logfile << "OFF picture loaded!\n";
+      usleep(3000000);
+      pic = pic_tmp.distort(rng, dataset.type);
+    } else {
+      pic = dataset.pictures[permutation[i]]->distort(rng, dataset.type);
+    }
     cnn.batchPool[cc].sampleNumbers.push_back(permutation[i]);
     cnn.batchPool[cc].batchSize++;
     cnn.batchPool[cc].interfaces[0].grids.push_back(SparseGrid());
@@ -59,6 +78,7 @@ void BatchProducer::preprocessBatch(int c, int cc, RNG &rng) {
     if (pic != dataset.pictures[permutation[i]])
       delete pic;
   }
+  logfile.close();
   assert(cnn.batchPool[cc].interfaces[0].sub->features.size() ==
          cnn.batchPool[cc].interfaces[0].nFeatures *
              cnn.batchPool[cc].interfaces[0].nSpatialSites);
