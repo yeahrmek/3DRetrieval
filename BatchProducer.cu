@@ -15,9 +15,9 @@
 
 BatchProducer::BatchProducer(SparseConvNetCUDA &cnn,
                              SpatiallySparseDataset &dataset, int spatialSize,
-                             int batchSize)
+                             int batchSize, PicturePreprocessing preprocessing_type)
     : cnn(cnn), batchCounter(-1), dataset(dataset), spatialSize(spatialSize),
-      batchSize(batchSize) {
+      batchSize(batchSize), preprocessing_type(preprocessing_type) {
   assert(batchSize > 0);
   nBatches = (dataset.pictures.size() + batchSize - 1) / batchSize;
   permutation = range(dataset.pictures.size());
@@ -44,9 +44,15 @@ void BatchProducer::preprocessBatch(int c, int cc, RNG &rng) {
   cnn.batchPool[cc].interfaces[0].spatialSize = spatialSize;
   cnn.batchPool[cc].interfaces[0].featuresPresent.hVector() =
       range(dataset.nFeatures);
-  for (int i = c * batchSize;
-       i < min((c + 1) * batchSize, (int)(dataset.pictures.size())); i++) {
-    Picture *pic = dataset.pictures[permutation[i]]->distort(rng, dataset.type);
+  int n_pictures = dataset.pictures.size();
+  for (int i = c * batchSize; i < min((c + 1) * batchSize, n_pictures); i++) {
+    // check whether picture is already loaded
+    if (!dataset.pictures[permutation[i]]->is_loaded) {
+      dataset.pictures[permutation[i]]->loadPicture();
+    }
+
+    Picture *pic = dataset.pictures[permutation[i]]->distort(rng, dataset.type,
+                                                             preprocessing_type);
     cnn.batchPool[cc].sampleNumbers.push_back(permutation[i]);
     cnn.batchPool[cc].batchSize++;
     cnn.batchPool[cc].interfaces[0].grids.push_back(SparseGrid());

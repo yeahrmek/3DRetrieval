@@ -65,7 +65,7 @@ public:
   void saveWeights(std::string baseName, int epoch, bool momentum = false);
   void calculateInputRegularizingConstants(SpatiallySparseDataset dataset);
 };
-
+/*
 class SparseConvTriangLeNet {
 private:
   std::auto_ptr<SparseConvNetCUDA> cnn;
@@ -97,3 +97,4 @@ public:
   void saveWeights(std::string baseName, int epoch, bool momentum = false);
   void calculateInputRegularizingConstants(SpatiallySparseDataset dataset);
 };
+*/

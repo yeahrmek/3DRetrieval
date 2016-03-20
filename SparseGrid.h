@@ -22,7 +22,7 @@
 #include <functional>
 #include <google/dense_hash_map>
 typedef google::dense_hash_map<int64_t, int, std::hash<int64_t>,
-                               std::equal_to<int64_t>> SparseGridMap;
+                               std::equal_to<int64_t> > SparseGridMap;
 class SparseGrid {
 public:
   int backgroundCol;

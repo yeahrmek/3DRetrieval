@@ -101,7 +101,7 @@ void SparseConvNet::calculateInputRegularizingConstants(
     SpatiallySparseDataset dataset) {
   cnn->calculateInputRegularizingConstants(dataset);
 }
-
+/*
 SparseConvTriangLeNet::SparseConvTriangLeNet(int dimension, int nInputFeatures,
                                              int nClasses, int pciBusID,
                                              int nTop)
@@ -170,3 +170,4 @@ void SparseConvTriangLeNet::calculateInputRegularizingConstants(
     SpatiallySparseDataset dataset) {
   cnn->calculateInputRegularizingConstants(dataset);
 }
+*/

@@ -1,6 +1,11 @@
 #include "Off3DFormatPicture.h"
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
+#include <math.h>
 
 int mapToGridOFF(float coord, int inputFieldSize) {
   return std::max(
@@ -76,14 +81,26 @@ void OffSurfaceModelPicture::normalize() { // Fit centrally in the cube
   points *= renderSize / scale;
 }
 
-void OffSurfaceModelPicture::random_rotation(RNG &rng) {
-  arma::mat L, Q, R;
-  L.set_size(3, 3);
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      L(i, j) = rng.uniform();
-  arma::qr(Q, R, L);
-  points = points * Q;
+void OffSurfaceModelPicture::random_rotation(RNG &rng, PicturePreprocessing rotate_axis) {
+  if (rotate_axis == ROTATE_Z_AXIS) {
+    arma::mat R = arma::zeros(3, 3);
+    double angle = rng.uniform(0, 2 * arma::datum::pi);
+    // R.zeros(3, 3);
+    R(2, 2) = 1;
+    R(0, 0) = cos(angle);
+    R(0, 1) = -sin(angle);
+    R(1, 0) = sin(angle);
+    R(1, 1) = cos(angle);
+    points = points * R;
+  } else {
+    arma::mat L, Q, R;
+    L.set_size(3, 3);
+    for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+        L(i, j) = rng.uniform();
+      arma::qr(Q, R, L);
+      points = points * Q;
+  }
 }
 
 void OffSurfaceModelPicture::jiggle(RNG &rng, float alpha) {
@@ -119,13 +136,16 @@ void OffSurfaceModelPicture::codifyInputData(SparseGrid &grid,
   }
 }
 
-Picture *OffSurfaceModelPicture::distort(RNG &rng, batchType type) {
+Picture *OffSurfaceModelPicture::distort(RNG &rng, batchType type,
+                                         PicturePreprocessing preprocessing_type) {
   OffSurfaceModelPicture *pic = new OffSurfaceModelPicture(*this);
-  pic->random_rotation(rng);
+  // std::cout << pic->is_loaded << " " << pic->picture_path << std::endl;
+  pic->random_rotation(rng, preprocessing_type);
   pic->normalize();
   if (type == TRAINBATCH) {
     pic->affineTransform(rng, 0.2);
     pic->jiggle(rng, 0.2);
   }
+  // std::cout << "Distorted!\n";
   return pic;
 }
