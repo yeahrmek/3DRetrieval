@@ -14,10 +14,11 @@ public:
   OffSurfaceModelPicture(std::string filename, int renderSize, int label_ = -1);
   ~OffSurfaceModelPicture();
   void normalize(); // Fit centrally in the cube [-scale_n/2,scale_n/2]^3
-  void random_rotation(RNG &rng);
+  void random_rotation(RNG &rng, PicturePreprocessing rotate_axis=ROTATE_GENERAL);
   void jiggle(RNG &rng, float alpha);
   void affineTransform(RNG &rng, float alpha);
   void codifyInputData(SparseGrid &grid, std::vector<float> &features,
                        int &nSpatialSites, int spatialSize);
-  Picture *distort(RNG &rng, batchType type = TRAINBATCH);
+  Picture *distort(RNG &rng, batchType type = TRAINBATCH,
+		   PicturePreprocessing rotate_axis=ROTATE_GENERAL);
 };

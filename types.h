@@ -19,6 +19,12 @@ enum ActivationFunction {
   PRELU,
   SIGMOID
 };
+
+enum PicturePreprocessing {
+  ROTATE_Z_AXIS,
+  ROTATE_GENERAL
+};
+
 #ifdef TYPES_CPP
 const char *sigmoidNames[] = {"", "ReLU", "VeryLeakyReLU", "LeakyReLU", "tanh",
                               "Softmax Classification", "PReLU", "Sigmoid"};

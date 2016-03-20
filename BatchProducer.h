@@ -14,9 +14,11 @@ public:
   SpatiallySparseDataset &dataset;
   int batchSize;
   int spatialSize;
+  PicturePreprocessing preprocessing_type;
   std::vector<int> permutation;
   BatchProducer(SparseConvNetCUDA &cnn, SpatiallySparseDataset &dataset,
-                int spatialSize, int batchSize);
+                int spatialSize, int batchSize,
+		PicturePreprocessing preprocessing_type=ROTATE_GENERAL);
   ~BatchProducer();
   SpatiallySparseBatch *nextBatch();
   void batchProducerThread(int nThread);

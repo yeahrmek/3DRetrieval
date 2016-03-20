@@ -47,9 +47,6 @@ void BatchProducer::preprocessBatch(int c, int cc, RNG &rng) {
   int n_pictures = dataset.pictures.size();
   for (int i = c * batchSize; i < min((c + 1) * batchSize, n_pictures); i++) {
     // check whether picture is already loaded
-    if (!dataset.pictures[permutation[i]]->is_loaded) {
-      dataset.pictures[permutation[i]]->loadPicture();
-    }
 
     Picture *pic = dataset.pictures[permutation[i]]->distort(rng, dataset.type,
                                                              preprocessing_type);

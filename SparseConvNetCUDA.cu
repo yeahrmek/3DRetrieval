@@ -269,13 +269,14 @@ void SparseConvNetCUDA::processBatch(SpatiallySparseBatch &batch,
 }
 float SparseConvNetCUDA::processDataset(SpatiallySparseDataset &dataset,
                                         int batchSize, float learningRate,
-                                        float momentum) {
+                                        float momentum,
+					PicturePreprocessing preprocessing_type) {
   assert(dataset.pictures.size() > 0);
   float errorRate = 0, nll = 0;
   multiplyAddCount = 0;
   auto start = std::chrono::system_clock::now();
   std::ofstream f, g;
-  BatchProducer bp(*this, dataset, inputSpatialSize, batchSize);
+  BatchProducer bp(*this, dataset, inputSpatialSize, batchSize, preprocessing_type);
   if (dataset.type == UNLABELEDBATCH) {
     f.open("unlabelledData.predictions");
     g.open("unlabelledData.probabilities");
@@ -321,7 +322,8 @@ float SparseConvNetCUDA::processDataset(SpatiallySparseDataset &dataset,
 }
 void SparseConvNetCUDA::processDatasetRepeatTest(
     SpatiallySparseDataset &dataset, int batchSize, int nReps,
-    std::string predictionsFilename, std::string confusionMatrixFilename) {
+    std::string predictionsFilename, std::string confusionMatrixFilename,
+    PicturePreprocessing preprocessing_type) {
   assert(dataset.pictures.size() > 0);
   multiplyAddCount = 0;
   auto start = std::chrono::system_clock::now();
@@ -332,7 +334,7 @@ void SparseConvNetCUDA::processDatasetRepeatTest(
     probs[i].resize(dataset.nClasses);
   }
   for (int rep = 1; rep <= nReps; ++rep) {
-    BatchProducer bp(*this, dataset, inputSpatialSize, batchSize);
+    BatchProducer bp(*this, dataset, inputSpatialSize, batchSize, preprocessing_type);
     while (SpatiallySparseBatch *batch = bp.nextBatch()) {
       std::ofstream f, g;
       processBatch(*batch, 0, 0, f, g);
