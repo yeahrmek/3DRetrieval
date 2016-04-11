@@ -40,20 +40,30 @@ std::vector<std::string> getdir (std::string dir)
   return files;
 }
 
-SpatiallySparseDataset ModelNetDataSet(int renderSize, int kFold, int fold, bool is_train) {
+SpatiallySparseDataset ModelNetDataSet(int renderSize, int kFold, int fold, batchType batch_type) {
   SpatiallySparseDataset dataset;
-  std::string mode = is_train ? std::string("train") : std::string("test");
-  dataset.name = "ModelNet (Train subset)";
-  dataset.type = is_train ? TRAINBATCH : TESTBATCH;
+  dataset.type = batch_type;
+  std::string mode;
+  int max_pictures_per_class;
+  if (batch_type == TRAINBATCH) {
+    dataset.name = "ModelNet (Train subset)";
+    mode = std::string("train");
+    max_pictures_per_class = 80;
+  } else if (batch_type == TESTBATCH) {
+    dataset.name = "ModelNet (Validation subset)";
+    mode = std::string("test");
+    max_pictures_per_class = 20;
+  } else {}
   dataset.nFeatures = 1;
-  std::string basedir = std::string("Data/ModelNet/");
+  std::string basedir = std::string("/media/toshiba/shape_retrieval_datasets/ModelNet/ModelNet40/");
   std::vector<std::string> classes = getdir(basedir);
   dataset.nClasses = classes.size();
+  std::cout << "Number of classes: " << dataset.nClasses << std::endl;
   sort(classes.begin(), classes.end());
   for (unsigned int class_id = 0;class_id < classes.size();class_id++) {
     std::string class_dir = basedir + classes[class_id] + std::string("/") + mode;
     std::vector<std::string> files = getdir(class_dir);
-    for (int i = 0; i < files.size(); ++i) {
+    for (int i = 0; i < std::min(max_pictures_per_class, (int)files.size()); ++i) {
       std::string filename = class_dir + std::string("/") + files[i];
       dataset.pictures.push_back(
               new OffSurfaceModelPicture(filename, renderSize, class_id));

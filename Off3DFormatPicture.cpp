@@ -53,7 +53,15 @@ OffSurfaceModelPicture::OffSurfaceModelPicture(std::string filename,
   std::string off;
   getline(file, off);
   int nPoints, nTriangles, nLines;
-  file >> nPoints >> nTriangles >> nLines;
+
+  // in some off files there is no "\n" symbol between first and second lines
+  if (off.length() > 4) {
+    std::istringstream second_line(off.substr(3));
+    second_line >> nPoints >> nTriangles >> nLines;
+  } else {
+    file >> nPoints >> nTriangles >> nLines;
+  }
+
   points.set_size(nPoints, 3);
   surfaces.resize(nTriangles);
   for (int i = 0; i < nPoints; i++)

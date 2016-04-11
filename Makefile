@@ -1,20 +1,11 @@
 CC=g++
-DEBUG ?= 0
-ifeq ($(DEBUG), 1)
-    CFLAGS=--std=c++11 -g
-    NVCCFLAGS=--std=c++11 -arch sm_20 -g
-else
-    CFLAGS=--std=c++11 -O3
-    NVCCFLAGS=--std=c++11 -arch sm_20 -O3
-endif
+CFLAGS=--std=c++11 -O3
 NVCC=nvcc
+NVCCFLAGS=--std=c++11 -arch sm_20 -O3
 OBJ=BatchProducer.o ConvolutionalLayer.o ConvolutionalTriangularLayer.o IndexLearnerLayer.o MaxPoolingLayer.o MaxPoolingTriangularLayer.o NetworkArchitectures.o NetworkInNetworkLayer.o NetworkInNetworkPReLULayer.o Picture.o Regions.o Rng.o SigmoidLayer.o SoftmaxClassifier.o SparseConvNet.o SparseConvNetCUDA.o SpatiallySparseBatch.o SpatiallySparseBatchInterface.o SpatiallySparseDataset.o SpatiallySparseLayer.o TerminalPoolingLayer.o readImageToMat.o types.o utilities.o vectorCUDA.o ReallyConvolutionalLayer.o vectorHash.o
 OBJCV=$(OBJ) OpenCVPicture.o SpatiallySparseDatasetOpenCV.o
 OBJCVT=$(OBJ) OpenCVTriangularPicture.o SpatiallySparseDatasetOpenCV.o
-LIBS=-lopencv_core -lopencv_highgui -lopencv_imgproc -lcublas -larmadillo
-ifeq ($(shell uname -s),Linux)
-    LIBS += -lrt
-endif
+LIBS=-lopencv_core -lopencv_highgui -lopencv_imgproc -lrt -lcublas -larmadillo
 
 %.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -25,6 +16,9 @@ clean:
 	rm *.o
 casia: $(OBJ) OnlineHandwritingPicture.o SpatiallySparseDatasetCasiaOLHWDB.o casia.o
 	$(NVCC) -o casia $(OBJ) OnlineHandwritingPicture.o SpatiallySparseDatasetCasiaOLHWDB.o casia.o $(LIBS) $(NVCCFLAGS)
+
+pendigits: $(OBJ) OnlineHandwritingPicture.o SpatiallySparseDatasetPenDigits.o pendigits.o
+	$(NVCC) -o pendigits $(OBJ) OnlineHandwritingPicture.o SpatiallySparseDatasetPenDigits.o pendigits.o $(LIBS) $(NVCCFLAGS)
 
 cifar10: $(OBJCV) SpatiallySparseDatasetCIFAR10.o cifar10.o
 	$(NVCC) -o cifar10 $(OBJCV) SpatiallySparseDatasetCIFAR10.o cifar10.o $(LIBS) $(NVCCFLAGS)
@@ -41,8 +35,8 @@ cifar100: $(OBJCV) SpatiallySparseDatasetCIFAR100.o cifar100.o
 shrec2015: $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetSHREC2015.o shrec2015.o
 	$(NVCC) -o shrec2015 $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetSHREC2015.o shrec2015.o $(LIBS) $(NVCCFLAGS)
 
-modelnet: $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetModelNet.o modelnet.o
-	$(NVCC) -o modelnet $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetModelNet.o modelnet.o $(LIBS) $(NVCCFLAGS)
+modelNet: $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetModelNet.o modelNet.o
+	$(NVCC) -o modelNet $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetModelNet.o modelNet.o $(LIBS) $(NVCCFLAGS)
 
 shrec2015_: $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetSHREC2015.o shrec2015_.o
 	$(NVCC) -o shrec2015_ $(OBJ) Off3DFormatPicture.o SpatiallySparseDatasetSHREC2015.o shrec2015_.o $(LIBS) $(NVCCFLAGS)
@@ -73,4 +67,3 @@ plankton: $(OBJCV) plankton.o
 
 cifar10indexLearning: $(OBJCV) SpatiallySparseDatasetCIFAR10.o cifar10indexLearning.o
 	$(NVCC) -o cifar10indexLearning $(OBJCV) SpatiallySparseDatasetCIFAR10.o cifar10indexLearning.o $(LIBS) $(NVCCFLAGS)
-

@@ -14,10 +14,12 @@ void SpatiallySparseDataset::summary() {
   for (auto pic : pictures) {
     count[pic->label]++;
   }
-  std::cout << "nPictures/class: ";
-  for (auto i : count)
-    std::cout << i << " ";
-  std::cout << std::endl;
+  if (type != UNLABELEDBATCH) {
+    std::cout << "nPictures/class:";
+    for (auto i : count)
+      std::cout << " " << i;
+    std::cout << std::endl;
+  }
 }
 SpatiallySparseDataset SpatiallySparseDataset::extractValidationSet(float p) {
   SpatiallySparseDataset val;
@@ -51,23 +53,33 @@ void SpatiallySparseDataset::subsetOfClasses(std::vector<int> activeClasses) {
   }
 }
 
-// Assume there are at least n of each class in the dataset
-SpatiallySparseDataset SpatiallySparseDataset::balancedSubset(int n) {
+// Pick n samples from each class if possible
+SpatiallySparseDataset SpatiallySparseDataset::balancedSample(int n) {
   SpatiallySparseDataset bs;
-  bs.name = name + std::string(" subset");
+  bs.name = name + std::string(" sample");
   bs.nFeatures = nFeatures;
   bs.nClasses = nClasses;
   bs.type = type;
-  auto permutation = rng.permutation(pictures.size());
   std::vector<int> count(nClasses);
   int classesDone = 0;
-  for (unsigned int i = 0; i < pictures.size() and classesDone < nClasses;
-       i++) {
-    auto pic = pictures[permutation[i]];
-    if (count[pic->label]++ < n)
-      bs.pictures.push_back(pic);
-    if (count[pic->label] == n)
-      classesDone++;
+  while (classesDone < nClasses) {
+    auto permutation = rng.permutation(pictures.size());
+    bool makingProgress = false;
+    for (unsigned int i = 0; i < pictures.size() and classesDone < nClasses;
+         i++) {
+      auto pic = pictures[permutation[i]];
+      if (count[pic->label]++ < n) {
+        bs.pictures.push_back(pic);
+        makingProgress = true;
+      }
+      if (count[pic->label] == n)
+        classesDone++;
+    }
+    if (not makingProgress) {
+      // std::cerr << "SpatiallySparseDataset::balancedSample(...) cannot find "
+      //              "examples of all classes in " << name << std::endl;
+      break;
+    }
   }
   return bs;
 }
@@ -89,6 +101,8 @@ void SpatiallySparseDataset::shuffle() {
   std::shuffle(pictures.begin(), pictures.end(), rng.gen);
 }
 void SpatiallySparseDataset::repeatSamples(int reps) {
+  std::cout << "Repeating each sample in " << name << " " << reps << " times"
+            << std::endl;
   int s = pictures.size();
   for (int i = 1; i < reps; ++i)
     for (int j = 0; j < s; ++j)

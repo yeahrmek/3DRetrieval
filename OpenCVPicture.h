@@ -27,7 +27,6 @@ public:
   ~OpenCVPicture();
   Picture *distort(RNG &rng, batchType type = TRAINBATCH);
   void affineTransform(float c00, float c01, float c10, float c11);
-  void centerMass();
   void codifyInputData(SparseGrid &grid, std::vector<float> &features,
                        int &nSpatialSites, int spatialSize);
   void jiggle(RNG &rng, int offlineJiggle);
@@ -43,6 +42,9 @@ public:
   void blur(float radius);
   void addSpatiallyCoherentNoise(RNG &rng, float amplitude, float radius);
   void multiplySpatiallyCoherentNoise(RNG &rng, float amplitude, float radius);
+  void centerMass();
+  int area(); // Function to compute number of non-background pixels = area of
+              // object
   std::string identify();
 };
 
